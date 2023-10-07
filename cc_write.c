@@ -229,9 +229,9 @@ void helpo()
 int main(int argc,char *argv[])
 {
   int opt;
-  int rePin=24;
-  int dcPin=27;
-  int ddPin=28;
+  int rePin=-1;
+  int dcPin=-1;
+  int ddPin=-1;
   int setMult=-1;
   while( (opt=getopt(argc,argv,"m:d:c:r:h?")) != -1)
   {
