@@ -7,18 +7,10 @@
 #define CC_ERROR_NOT_DEBUGGING  2
 #define CC_ERROR_NOT_WIRED      3
 
-// defaŭltaj valoroj por pingloj
-// por restarigi al pinglo 35, DC al pinglo 36, DD al pinglo 38
-#define PIN_RST 24
-#define PIN_DC  27
-#define PIN_DD 28
-
-// alternativaj valoroj por pingloj
-// por restarigi al pinglo 3, DC al pinglo 11, DD al pinglo 13
-// Utila por pi 1.
-//#define PIN_RST 8
-//#define PIN_DC  0
-//#define PIN_DD 2
+// Default GPIO configuration
+#define PIN_RST 19
+#define PIN_DC  16
+#define PIN_DD  20
 
   int cc_init( int pinRST, int pinDC, int pinDD );
   void cc_delay( unsigned int d );

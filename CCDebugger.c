@@ -189,7 +189,9 @@ void cc_setmult(int mult)
   cc_delay_mult=mult;
 }
 
-/* provas konsideri la rapidecon de la procesoro */
+/**
+ * Tries to take the processor speed into account
+ */
 void cc_delay_calibrate( )
 {
   long time0=micros();

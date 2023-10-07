@@ -66,7 +66,7 @@ void readPage(int page,uint8_t *buf)
   // select bank
   res = (res & 0xF8) | (bank & 0x07);
   res = cc_exec3(0x75, 0xC7, res); // MOV direct,#data
-  // calculer l'adresse de destination
+  // calculate destination address
   uint32_t offset = ((page&0xf)<<11) + Pages[page].minoffset;
   // Setup DPTR
   cc_execi( 0x90, 0x8000+offset ); // MOV DPTR,#data16
@@ -107,7 +107,7 @@ int writePage(int page)
   // select bank
   res = (res & 0xF8) | (bank & 0x07);
   res = cc_exec3(0x75, 0xC7, res); // MOV direct,#data
-  // calculer l'adresse de destination
+  // calculate destination address
   // round minoffset because FADDR is a word address
   Pages[page].minoffset = (Pages[page].minoffset & 0xfffffffc);
   // round maxoffset to write entire words
@@ -117,7 +117,7 @@ int writePage(int page)
   uint32_t len = Pages[page].maxoffset-Pages[page].minoffset+1;
   //FIXME : sometimes incorrect length is wrote
   //if(len&0xf && (Pages[page].minoffset+len<2032)) len= (len&0x7f0)+16;
-  // configure DMA-0 pour DEBUG --> RAM
+  // configure DMA-0 for DEBUG --> RAM
   uint8_t dma_desc0[8];
   dma_desc0[0] = 0x62;// src[15:8]
   dma_desc0[1] = 0x60;// src[7:0]
@@ -131,7 +131,7 @@ int writePage(int page)
   cc_exec3( 0x75, 0xD4, 0x00);
   cc_exec3( 0x75, 0xD5, 0x10);
 
-  // configure DMA-1 pour RAM --> FLASH
+  // configure DMA-1 for RAM --> FLASH
   uint8_t dma_desc1[8];
   dma_desc1[0] = 0x00;// src[15:8]
   dma_desc1[1] = 0x00;// src[7:0]
@@ -164,7 +164,7 @@ int writePage(int page)
   res |= 1;
   cc_exec3(0x75,0xD6,res);
   cc_delay(200);
-  // transfert de données en mode burst
+  // transfer data in burst mode
   cc_write(0x80|( (len>>8)&0x7) );
   cc_write(len&0xff);
   for(int i=0 ; i<len ;i++)
@@ -185,7 +185,7 @@ int writePage(int page)
   res = cc_exec2(0xE5, 0xD6);
   res &= ~2;
   cc_exec3(0x75,0xD6,res);
-  // écrire l'adresse de destination dans FADDRH FADDRL
+  // write destination address in FADDRH FADDRL
   offset = ((page&0xff)<<11) + Pages[page].minoffset;
   res=(offset>>2)&0xff;
   writeXDATA( 0x6271, &res,1);
@@ -196,7 +196,7 @@ int writePage(int page)
   res |= 2;
   cc_exec3(0x75,0xD6,res);
   cc_delay(200);
-  // lancer la copie vers la FLASH
+  // start copying to FLASH
   readXDATA(0x6270, &res, 1);
   res |= 2;
   writeXDATA(0x6270, &res, 1);
@@ -207,7 +207,7 @@ int writePage(int page)
     res = cc_exec2(0xE5, 0xD1);
     res &= 2;
   } while (res==0);
-  // vérifie qu'il n'y a pas eu de flash abort
+  // check for flash aborts
   readXDATA(0x6270, &res, 1);
   if (res&0x20)
   {
@@ -240,17 +240,17 @@ int main(int argc,char *argv[])
      case 'm' : 
       setMult=atoi(optarg);
       break;
-     case 'd' : // DD pinglo
+     case 'd' : // data pin (DD)
       ddPin=atoi(optarg);
       break;
-     case 'c' : // DC pinglo
+     case 'c' : // clock pin (DC)
       dcPin=atoi(optarg);
       break;
-     case 'r' : // restarigi pinglo
+     case 'r' : // reset pin (RST)
       rePin=atoi(optarg);
       break;
-     case 'h' : // helpo
-     case '?' : // helpo
+     case 'h' : // help
+     case '?' : // help
       helpo();
       exit(0);
       break;
@@ -259,12 +259,12 @@ int main(int argc,char *argv[])
   if( optind >= argc ) { helpo(); exit(1); }
  FILE * ficin = fopen(argv[optind],"r");
   if(!ficin) { fprintf(stderr," Can't open file %s.\n",argv[optind]); exit(1); }
-  // on initialise les ports GPIO et le debugger
+  // initialize GPIO ports and debugger
   cc_init(rePin,dcPin,ddPin);
   if(setMult>0) cc_setmult(setMult);
-  // entrée en mode debug
+  // enter debug mode
   cc_enter();
-  // envoi de la commande getChipID :
+  // send the getChipID command :
   uint16_t ID;
   ID = cc_getChipID();
   printf("  ID = %04x.\n",ID);
@@ -323,8 +323,8 @@ int main(int argc,char *argv[])
     int page= (sla+addr)>>11;
     if (page>maxpage) maxpage=page;
     uint16_t start=(sla+addr)&0x7ff;
-    if(start+len> 2048) // some datas are for next page
-    { //copy end of datas to next page
+    if(start+len> 2048) // some data is for the next page
+    { //copy end of data to the next page
       if (page+1>maxpage) maxpage=page+1;
       memcpy(&Pages[page+1].datas[0]
 		,data+2048-start,(start+len-2048));
@@ -340,7 +340,7 @@ int main(int argc,char *argv[])
   printf("\n  file loaded (%d lines read).\n",line);
 
 
-  // activer DMA
+  // activate DMA
   uint8_t conf=cc_getConfig();
   conf &= ~0x4;
   cc_setConfig(conf);
@@ -353,7 +353,7 @@ int main(int argc,char *argv[])
     writePage(page);
   }
   printf("\n");
-  // lire les données et les vérifier
+  // read and check data
   int badPage=0;
   for (int page=0 ; page <= maxpage ; page++)
   {
@@ -368,7 +368,7 @@ int main(int argc,char *argv[])
   else
     printf(" Errors found in %d pages.\n",badPage);
 
-  // sortie du mode debug et désactivation :
+  // exit debug mode and set inactive :
   cc_setActive(false);
   // reboot
   cc_reset();

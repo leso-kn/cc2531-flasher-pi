@@ -83,17 +83,17 @@ int main(int argc,char *argv[])
      case 'm' : 
       setMult=atoi(optarg);
       break;
-     case 'd' : // DD pinglo
+     case 'd' : // data pin (DD)
       ddPin=atoi(optarg);
       break;
-     case 'c' : // DC pinglo
+     case 'c' : // clock pin (DC)
       dcPin=atoi(optarg);
       break;
-     case 'r' : // restarigi pinglo
+     case 'r' : // reset pin (RST)
       rePin=atoi(optarg);
       break;
-     case 'h' : // helpo
-     case '?' : // helpo
+     case 'h' : // help
+     case '?' : // help
       helpo();
       exit(0);
       break;
@@ -102,7 +102,7 @@ int main(int argc,char *argv[])
   if( optind >= argc ) { helpo(); exit(1); }
   FILE * ficout = fopen(argv[optind],"w");
   if(!ficout) { fprintf(stderr," Can't open file %s.\n",argv[optind]); exit(1); }
-  //  initialize GPIO ports
+  // initialize GPIO pins
   cc_init(rePin,dcPin,ddPin);
   if(setMult>0) cc_setmult(setMult);
   // enter debug mode
