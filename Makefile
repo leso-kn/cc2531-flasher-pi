@@ -1,4 +1,6 @@
-LDLIBS=-lwiringPi -lcrypt -lm -lrt
+WIRINGPI_LIBS = $(shell pkg-config --libs wiringpi-gpiod >/dev/null || echo '-lwiringPi')
+
+LDLIBS=$(WIRINGPI_LIBS) -lcrypt -lm -lrt
 CFLAGS=-g
 LDFLAGS=-g
 
